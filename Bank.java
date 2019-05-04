@@ -98,9 +98,6 @@ public class Bank {
                 e.printStackTrace();
             }
         }
-        for (int i=0; i<operatorNum; ++i){
-            operators[i].interrupt();
-        }
     }
 
     /**
