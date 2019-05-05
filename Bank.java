@@ -31,7 +31,7 @@ public class Bank {
             if (!fileName.equals("small.txt")){
                 for (int i=0; i<ACCOUNT_NUMBER; ++i){
                     if (accounts[i].getBalance() != INITIAL_AMOUNT){
-                        System.out.println("Not correct balance - " + accounts[i].getID());
+                        System.out.println("Not correct balance - " + accounts[i].getID() + " -- " + accounts[i].getBalance());
                     }
                 }
             } else {
@@ -94,6 +94,13 @@ public class Bank {
         for (int i=0; i<operatorNum; ++i){
             try {
                 queue.put(new Transaction(-1, -1, 0));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        for (int i=0; i<operatorNum; ++i){
+            try {
+                operators[i].join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

@@ -1,7 +1,25 @@
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 public class Cracker {
 	// Array of chars used to produce strings
 	public static final char[] CHARS = "abcdefghijklmnopqrstuvwxyz0123456789.,-!".toCharArray();	
-	
+
+	public static void main(String[] args){
+		String s = "flomo";
+		MessageDigest d = null;
+		try {
+			d = MessageDigest.getInstance("SHA-1");
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		d.update(s.getBytes());
+		byte[] encode = d.digest();
+		System.out.println(hexToString(encode));
+	}
+
 	/*
 	 Given a byte[] array, produces a hex String,
 	 such as "234a6f". with 2 chars for each byte in the array.
@@ -37,5 +55,4 @@ public class Cracker {
 	// fm adeb6f2a18fe33af368d91b09587b68e3abcb9a7
 	// a! 34800e15707fae815d7c90d49de44aca97e2d759
 	// xyz 66b27417d37e024c46526c2f6d358a754fc552f3
-
 }
