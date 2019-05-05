@@ -4,20 +4,50 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Cracker {
-	// Array of chars used to produce strings
-	public static final char[] CHARS = "abcdefghijklmnopqrstuvwxyz0123456789.,-!".toCharArray();	
+	/* Array of chars used to produce strings */
+	public static final char[] CHARS = "abcdefghijklmnopqrstuvwxyz0123456789.,-!".toCharArray();
+
+	/* number of workers to crack */
+	private static int workerNum;
+
+	/* worker threads */
+	private static Thread[] workers;
 
 	public static void main(String[] args){
-		String s = "flomo";
-		MessageDigest d = null;
-		try {
-			d = MessageDigest.getInstance("SHA-1");
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+		if (args.length != 3){
+			return;
 		}
-		d.update(s.getBytes());
-		byte[] encode = d.digest();
-		System.out.println(hexToString(encode));
+
+		/* hash of string to guess */
+		byte[] h = hexToArray(args[0]);
+
+		/* max length of string */
+		int maxLength = Integer.parseInt(args[1]);
+
+		workerNum = Integer.parseInt(args[2]);
+		workers = new Thread[workerNum];
+		int start = 0;
+		for (int i=0; i<workerNum; ++i){
+			int l = CHARS.length / workerNum + (i == workerNum - 1 ?CHARS.length % workerNum:0);
+			char[] ch = new char[l];
+			for (int j=start; j<start + l; ++j){
+				ch[j - start] = CHARS[j];
+			}
+			start += l;
+			CrackerWorker w = new CrackerWorker(maxLength, new String(ch), CHARS, h);
+			workers[i] = new Thread(w);
+		}
+		for (int i=0; i<workerNum; ++i){
+			workers[i].start();
+		}
+		for (int i=0; i<workerNum; ++i){
+			try {
+				workers[i].join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println("All done.");
 	}
 
 	/*
