@@ -23,7 +23,7 @@ public class TestClass {
                 s += CHARS[Math.abs(rgen.nextInt()) % CHARS.length];
             }
             String hash = Cracker.hexToString(d.digest(s.getBytes()));
-            System.out.println("String to crack -- " + l + " " + s + " " + hash);
+            System.out.println("String to crack -- " + s + " " + hash);
             String[] arg = new String[]{hash, "5", "8"};
             Cracker.main(arg);
         }
