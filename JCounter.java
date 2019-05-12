@@ -134,7 +134,7 @@ public class JCounter extends JPanel {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         JPanel table = new JPanel();
-        table.setLayout(new FlowLayout());
+        table.setLayout(new BoxLayout(table, BoxLayout.Y_AXIS));
         frame.add(table);
 
         for (int i=1; i<=COUNTER_NUMBER; ++i){
