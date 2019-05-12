@@ -91,7 +91,6 @@ public class JCounter extends JPanel {
                         try {
                             Thread.sleep(1);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
                             break;
                         }
                     }
@@ -135,7 +134,7 @@ public class JCounter extends JPanel {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         JPanel table = new JPanel();
-        table.setLayout(new BoxLayout(table, BoxLayout.Y_AXIS));
+        table.setLayout(new FlowLayout());
         frame.add(table);
 
         for (int i=1; i<=COUNTER_NUMBER; ++i){

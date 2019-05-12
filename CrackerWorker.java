@@ -2,7 +2,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-public class CrackerWorker implements Runnable{
+public class CrackerWorker implements Runnable {
     /* symbols to start the strings with */
     private String firstSymbol;
 

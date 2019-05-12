@@ -2,9 +2,22 @@ import java.io.*;
 import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.BlockingQueue;
 import javax.swing.*;
 
 public class WebWorker extends Thread {
+
+    private BlockingQueue<String> queue;
+
+    public WebWorker(BlockingQueue<String> queue){
+        this.queue = queue;
+    }
+
+    @Override
+    public void run(){
+        System.out.println("yle");
+    }
+
 /*
   This is the core web/download i/o code...
  		InputStream input = null;
