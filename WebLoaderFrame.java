@@ -24,11 +24,11 @@ public class WebLoaderFrame extends JPanel {
     private JButton oneThreadB, multyThreadB, stop;
     private JTextField numberField;
     private ArrayList<String> list;
-    private Thread[] threads;
     private static Thread listenerThread = null;
+    private static Semaphore listenerLock;
 
     private static final int MAX_THREADS = 4;
-    private static final int FIELD_SIZE = 5;
+    private static final int FIELD_SIZE = 15;
     private static final int PANE_WIDTH = 600;
     private static final int PANE_HEIGHT = 400;
     private static final int FRAME_WIDTH = 600;
@@ -55,25 +55,35 @@ public class WebLoaderFrame extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         add(panel);
-        add(oneThreadB);
-        add(Box.createRigidArea(new Dimension(0,5)));
-        add(multyThreadB);
-        add(Box.createRigidArea(new Dimension(0,5)));
-        add(numberField);
-        add(Box.createRigidArea(new Dimension(0,5)));
+        JPanel pOne = new JPanel(new FlowLayout());
+        pOne.add(oneThreadB);
+        add(pOne);
+        add(Box.createRigidArea(new Dimension(0,3)));
+        JPanel pMulty = new JPanel(new FlowLayout());
+        pMulty.add(multyThreadB);
+        add(pMulty);
+        add(Box.createRigidArea(new Dimension(0,3)));
+        JPanel p = new JPanel(new FlowLayout());
+        p.add(numberField);
+        add(p);
+        add(Box.createRigidArea(new Dimension(0,3)));
         addLabel("Running: ", running);
-        add(Box.createRigidArea(new Dimension(0,5)));
+        add(Box.createRigidArea(new Dimension(0,3)));
         addLabel("Completed: ", completed);
-        add(Box.createRigidArea(new Dimension(0,5)));
+        add(Box.createRigidArea(new Dimension(0,3)));
         addLabel("Elapsed: ", elapsed);
-        add(Box.createRigidArea(new Dimension(0,5)));
+        add(Box.createRigidArea(new Dimension(0,3)));
         add(progressBar);
-        add(Box.createRigidArea(new Dimension(0,5)));
-        add(stop);
+        add(Box.createRigidArea(new Dimension(0,3)));
+        JPanel pStop = new JPanel(new FlowLayout());
+        pStop.add(stop);
+        add(pStop);
         stop.setEnabled(false);
 
         addLinks();
         addListeners();
+
+        listenerLock = new Semaphore(1);
     }
 
     /**
@@ -98,46 +108,77 @@ public class WebLoaderFrame extends JPanel {
         oneThreadB.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                oneThreadB.setEnabled(false);
-                multyThreadB.setEnabled(false);
-                listenerThread = Thread.currentThread();
-                long startTime = System.currentTimeMillis();
-                for (int i=0; i<list.size(); ++i){
-                    model.setValueAt("", i, 1);
+                try {
+                    listenerLock.acquire();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
                 }
-                stop.setEnabled(true);
-                makeThreads(1);
-                long endTime = System.currentTimeMillis();
-                elapsed.setText("" + ((double)(endTime - startTime) / 1000) + " seconds");
-                oneThreadB.setEnabled(true);
-                multyThreadB.setEnabled(true);
-                stop.setEnabled(false);
-                progressBar.setValue(0);
+                listenerThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        running.setText("0");
+                        completed.setText("0");
+                        elapsed.setText("0");
+                        oneThreadB.setEnabled(false);
+                        multyThreadB.setEnabled(false);
+                        long startTime = System.currentTimeMillis();
+                        for (int i=0; i<list.size(); ++i){
+                            model.setValueAt("", i, 1);
+                        }
+                        stop.setEnabled(true);
+                        makeThreads(1);
+                        long endTime = System.currentTimeMillis();
+                        elapsed.setText("" + ((double)(endTime - startTime) / 1000) + " seconds");
+                        oneThreadB.setEnabled(true);
+                        multyThreadB.setEnabled(true);
+                        stop.setEnabled(false);
+                        progressBar.setValue(0);
+                        listenerLock.release();
+                    }
+                });
+                listenerThread.start();
             }
         });
 
         multyThreadB.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                oneThreadB.setEnabled(false);
-                multyThreadB.setEnabled(false);
-                listenerThread = Thread.currentThread();
-                long startTime = System.currentTimeMillis();
-                String s = numberField.getText();
-                if (!check(s)){
-                    return;
+                try {
+                    listenerLock.acquire();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
                 }
-                stop.setEnabled(true);
-                for (int i=0; i<list.size(); ++i){
-                    model.setValueAt("", i, 1);
-                }
-                makeThreads(Integer.parseInt("" + s.charAt(0)));
-                long endTime = System.currentTimeMillis();
-                elapsed.setText("" + ((double)(endTime - startTime) / 1000.0) + " seconds");
-                progressBar.setValue(0);
-                oneThreadB.setEnabled(true);
-                multyThreadB.setEnabled(true);
-                stop.setEnabled(false);
+                listenerThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        running.setText("0");
+                        completed.setText("0");
+                        elapsed.setText("0");
+                        oneThreadB.setEnabled(false);
+                        multyThreadB.setEnabled(false);
+                        long startTime = System.currentTimeMillis();
+                        String s = numberField.getText();
+                        if (!check(s)) {
+                            oneThreadB.setEnabled(true);
+                            multyThreadB.setEnabled(true);
+                            listenerLock.release();
+                            return;
+                        }
+                        stop.setEnabled(true);
+                        for (int i = 0; i < list.size(); ++i) {
+                            model.setValueAt("", i, 1);
+                        }
+                        makeThreads(Integer.parseInt("" + s.charAt(0)));
+                        long endTime = System.currentTimeMillis();
+                        elapsed.setText("" + ((double) (endTime - startTime) / 1000.0) + " seconds");
+                        progressBar.setValue(0);
+                        oneThreadB.setEnabled(true);
+                        multyThreadB.setEnabled(true);
+                        stop.setEnabled(false);
+                        listenerLock.release();
+                    }
+                });
+                listenerThread.start();
             }
         });
 
@@ -192,19 +233,21 @@ public class WebLoaderFrame extends JPanel {
             }
             workers[pos].start();
         }
-        for (int i=0; i<=Math.min(pos, list.size() - 1); ++i){
-            try {
-                workers[i].join();
-            } catch (InterruptedException e) {
-                ind = true;
-                break;
+        if (!ind) {
+            for (int i = 0; i < pos; ++i) {
+                try {
+                    workers[i].join();
+                } catch (InterruptedException e) {
+                    ind = true;
+                    break;
+                }
             }
         }
         if (ind){
-            for (int i=0; i<=pos; i++){
+            for (int i=0; i<pos; i++){
                 workers[i].interrupt();
             }
-            for (int i=0; i<=pos; ++i){
+            for (int i=0; i<pos; ++i){
                 try {
                     workers[i].join();
                 } catch (InterruptedException e) {
@@ -244,7 +287,7 @@ public class WebLoaderFrame extends JPanel {
      * */
     private static void createAndShowGUI() {
         WebLoaderFrame mainPanel = new WebLoaderFrame();
-        JFrame mainFrame = new JFrame();
+        JFrame mainFrame = new JFrame("WebLoader");
         mainFrame.setLayout(new FlowLayout());
         mainFrame.add(mainPanel);
         mainFrame.setVisible(true);
