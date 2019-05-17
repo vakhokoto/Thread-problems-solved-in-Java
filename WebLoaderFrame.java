@@ -151,9 +151,9 @@ public class WebLoaderFrame extends JPanel {
                 listenerThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        running.setText("0");
-                        completed.setText("0");
-                        elapsed.setText("0");
+                        prepareLabel(running);
+                        prepareLabel(completed);
+                        prepareLabel(elapsed);
                         oneThreadB.setEnabled(false);
                         multyThreadB.setEnabled(false);
                         long startTime = System.currentTimeMillis();
@@ -170,7 +170,7 @@ public class WebLoaderFrame extends JPanel {
                         }
                         makeThreads(Integer.parseInt("" + s.charAt(0)));
                         long endTime = System.currentTimeMillis();
-                        elapsed.setText("" + ((double) (endTime - startTime) / 1000.0) + " seconds");
+                        setElapsed(elapsed, "" + ((double) (endTime - startTime) / 1000.0) + " seconds");
                         progressBar.setValue(0);
                         oneThreadB.setEnabled(true);
                         multyThreadB.setEnabled(true);
@@ -191,6 +191,24 @@ public class WebLoaderFrame extends JPanel {
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
+            }
+        });
+    }
+
+    private static void setElapsed(JLabel label, String str){
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                label.setText(str);
+            }
+        });
+    }
+
+    private void prepareLabel(JLabel label) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                label.setText("0");
             }
         });
     }

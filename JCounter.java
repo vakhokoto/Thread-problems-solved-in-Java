@@ -87,7 +87,13 @@ public class JCounter extends JPanel {
                 }
                 for (int i=0; i<=(to == -1 ?MAX_VALUE:to); ++i){
                     if (i % PERIOD == 0){
-                        label.setText(String.valueOf(i));
+                        int finalI = i;
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                label.setText(String.valueOf(finalI));
+                            }
+                        });
                         try {
                             Thread.sleep(1);
                         } catch (InterruptedException e) {

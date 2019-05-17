@@ -103,9 +103,12 @@ public class WebWorker extends Thread {
      * @param str string to which grid should be set
      * */
     private void setModelValue(String str) {
-        synchronized (model){
-            model.setValueAt(str, x, y);
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                model.setValueAt(str, x, y);
+            }
+        });
     }
 
     /**
