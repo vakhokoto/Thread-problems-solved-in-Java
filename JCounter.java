@@ -12,6 +12,9 @@ public class JCounter extends JPanel {
     private Thread counter;
     private JTextField field;
 
+    /* nothing spetial it is just for practise with git */
+    private int helperForSomething = -1;
+
     /* JCounter id */
     private final int id;
 
